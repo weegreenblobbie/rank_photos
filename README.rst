@@ -11,13 +11,13 @@ Photo Ranking With Python
 What is this?
 -------------
 
-This is a tool that uses the `Elo Ranking System`_ written in Python using::
+This is a tool that uses the `Elo Ranking System`_ written in Python using:
 
 1. Matplotlib
 2. Numpy
 3. exifread
 
-Features::
+Features:
 
 * Auto image rotation that the camera recored in the EXIF meta data
 * Persistent state from execution to execution so you can pickup where you left off
