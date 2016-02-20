@@ -27,7 +27,7 @@ Features:
 Install dependencies
 --------------------
 
-Use your system's package manager to install Numpy & Matplotlib if you don't
+Use your system's package manager to install Matplotlib & Numpy if you don't
 already have them installed.
 
 Next, you can use pip to install the EXIF image reader package `exifread`_:
@@ -45,12 +45,13 @@ line passing it the directory of photos.
 
 .. code-block:: bash
 
-    ./rank_photos.py --help
+    ./rank_photos.py -h
+
     usage: rank_photos.py [-h] [-r N_ROUNDS] [-f FIGSIZE FIGSIZE] photo_dir
 
-    Uses the Elo ranking algorithm to sort your images by rank. The program reads
-    the comand line for images to present to you in random order, then you select
-    the better photo. After N iteration the resulting rankings are displayed.
+    Uses the Elo ranking algorithm to sort your images by rank. The program globs
+    for .jpg images to present to you in random order, then you select the better
+    photo. After n-rounds, the results are reported.
 
     positional arguments:
       photo_dir             The photo directory to scan for .jpg images
@@ -59,7 +60,7 @@ line passing it the directory of photos.
       -h, --help            show this help message and exit
       -r N_ROUNDS, --n-rounds N_ROUNDS
                             Specifies the number of rounds to pass through the
-                            photo set
+                            photo set (3)
       -f FIGSIZE FIGSIZE, --figsize FIGSIZE FIGSIZE
                             Specifies width and height of the Matplotlib figsize
                             (20, 12)
@@ -70,7 +71,7 @@ For example, iterate over all photos three times:
 
     ./rank_photos.py -r 3 ~/Desktop/example/
 
-After the number of rounds complete, `ranked.txt` is written into the photo dir.
+After the number of rounds complete, ``ranked.txt`` is written into the photo dir.
 
 
 Ranking work is cached
@@ -93,6 +94,7 @@ Suppose there is a dir containing some photos:
 .. code-block:: bash
 
     ls -1 ~/Desktop/example/
+
         20160102_164732.jpg
         20160109_151557.jpg
         20160109_151607.jpg
@@ -121,23 +123,13 @@ Once the number of rounds completes, the ranked list is dumped to the console:
        6    1383          3      33.33    20160109_152318.jpg
        7    1382          3      33.33    20160109_152400.jpg
 
-The ranked list is also written to the file ``ranked.txt``:
+The ranked list is also written to the file ``ranked.txt``.  The raw data is
+cached to the file ``ranking_table.json``:
 
-.. code-bash:: bash
-
-    cat ~/Desktop/example/ranked.txt
-    Rank    Score    Matches    Win %    Filename
-       1    1433          2     100.00    20160109_152414.jpg
-       2    1414          3      66.67    20160109_151557.jpg
-       3    1401          2      50.00    20160109_153443.jpg
-       4    1400          2      50.00    20160102_164732.jpg
-       5    1387          3      33.33    20160109_151607.jpg
-       6    1383          3      33.33    20160109_152318.jpg
-       7    1382          3      33.33    20160109_152400.jpg
-
-The raw data is cached to the file ``ranking_table.json``:
+.. code-block:: bash
 
     cat ~/Desktop/example/ranking_table.json
+
     {
         "photos" : [
             {
@@ -185,6 +177,6 @@ The raw data is cached to the file ``ranking_table.json``:
         ]
     }
 
-If you run the program again, the cached data is loaded and new matches can
-be continued using the cached data.  If new photos are added, they get added
-to the table data and are included in new match ups.
+If you run the program again, the cached data is loaded and new match ups can
+be continued using the cached data.  If new photos were added, they also get
+added to the table data and are included in match ups.

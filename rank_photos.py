@@ -305,9 +305,9 @@ class EloTable:
 def main():
 
     description = """\
-Uses the Elo ranking algorithm to sort your images by rank.  The program reads
-the comand line for images to present to you in random order, then you select
-the better photo.  After N iteration the resulting rankings are displayed.
+Uses the Elo ranking algorithm to sort your images by rank.  The program globs
+for .jpg images to present to you in random order, then you select the better
+photo.  After n-rounds, the results are reported.
 """
     parser = argparse.ArgumentParser(description = description)
 
@@ -316,7 +316,7 @@ the better photo.  After N iteration the resulting rankings are displayed.
         "--n-rounds",
         type = int,
         default = 3,
-        help = "Specifies the number of rounds to pass through the photo set"
+        help = "Specifies the number of rounds to pass through the photo set (3)"
     )
 
     parser.add_argument(
