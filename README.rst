@@ -14,8 +14,8 @@ What is this?
 This is a tool that uses the `Elo Ranking System`_ written in Python using::
 
 1. Matplotlib
-1. Numpy
-1. exifread
+2. Numpy
+3. exifread
 
 Features::
 
