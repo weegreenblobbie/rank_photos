@@ -103,13 +103,14 @@ Suppose there is a dir containing some photos:
         20160109_152414.jpg
         20160109_153443.jpg
 
-These photos haven't been ranked yet, so lets ranking, 1 round:
+These photos haven't been ranked yet, so lets rank them, in this example, 1
+round:
 
 .. code-block:: bash
 
     ./rank_photos.py -r 1 ~/Desktop/example/
 
-Once the number of rounds completes, the ranked list is dumped to the console:
+Once the number of rounds complete, the ranked list is dumped to the console:
 
 .. code-block:: bash
 
