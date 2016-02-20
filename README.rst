@@ -1,23 +1,25 @@
-Photo Ranking With Elo
-======================
+Photo Ranking With Python
+=========================
 
 .. hyper link references
 
 .. _`Elo Ranking System`: http://en.wikipedia.org/wiki/Elo_rating_system
 .. _`exifread`: https://pypi.python.org/pypi/ExifRead
 
+.. image:: screenshot.png
 
 What is this?
 -------------
 
 This is a tool that uses the `Elo Ranking System`_ written in Python using:
-- Matplotlib
-- Numpy
-- exifread
+1. Matplotlib
+1. Numpy
+1. exifread
 
 Features:
-- Persistent state from execution to execution so you can pickup where you left off
-- Auto image rotation that the camera recored in the EXIF meta data
+* Auto image rotation that the camera recored in the EXIF meta data
+* Persistent state from execution to execution so you can pickup where you left off
+* New photos that are added to the photo dir after initial ranking are picked up
 
 
 Install dependencies
@@ -42,29 +44,29 @@ line passing it the directory of photos.
 .. code-block:: bash
 
     ./rank_photos.py --help
-usage: rank_photos.py [-h] [-r N_ROUNDS] [-f FIGSIZE FIGSIZE] photo_dir
+    usage: rank_photos.py [-h] [-r N_ROUNDS] [-f FIGSIZE FIGSIZE] photo_dir
 
-Uses the Elo ranking algorithm to sort your images by rank. The program reads
-the comand line for images to present to you in random order, then you select
-the better photo. After N iteration the resulting rankings are displayed.
+    Uses the Elo ranking algorithm to sort your images by rank. The program reads
+    the comand line for images to present to you in random order, then you select
+    the better photo. After N iteration the resulting rankings are displayed.
 
-positional arguments:
-  photo_dir             The photo directory to scan for .jpg images
+    positional arguments:
+      photo_dir             The photo directory to scan for .jpg images
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -r N_ROUNDS, --n-rounds N_ROUNDS
-                        Specifies the number of rounds to pass through the
-                        photo set
-  -f FIGSIZE FIGSIZE, --figsize FIGSIZE FIGSIZE
-                        Specifies width and height of the Matplotlib figsize
-                        (20, 12)
+    optional arguments:
+      -h, --help            show this help message and exit
+      -r N_ROUNDS, --n-rounds N_ROUNDS
+                            Specifies the number of rounds to pass through the
+                            photo set
+      -f FIGSIZE FIGSIZE, --figsize FIGSIZE FIGSIZE
+                            Specifies width and height of the Matplotlib figsize
+                            (20, 12)
 
 For example, iterate over all photos three times:
 
 .. code-block:: bash
 
-    ./rank_photos.py -r 3 some/path/to/photos
+    ./rank_photos.py -r 3 ~/Desktop/example/
 
 After the number of rounds complete, `ranked.txt` is written into the photo dir.
 
@@ -103,6 +105,84 @@ These photos haven't been ranked yet, so lets ranking, 1 round:
 
     ./rank_photos.py -r 1 ~/Desktop/example/
 
-Example display:
+Once the number of rounds completes, the ranked list is dumped to the console:
 
-.. image:: screenshot.png
+.. code-block:: bash
+
+    Final Ranking:
+    Rank    Score    Matches    Win %    Filename
+       1    1433          2     100.00    20160109_152414.jpg
+       2    1414          3      66.67    20160109_151557.jpg
+       3    1401          2      50.00    20160109_153443.jpg
+       4    1400          2      50.00    20160102_164732.jpg
+       5    1387          3      33.33    20160109_151607.jpg
+       6    1383          3      33.33    20160109_152318.jpg
+       7    1382          3      33.33    20160109_152400.jpg
+
+The ranked list is also written to the file ``ranked.txt``:
+
+.. code-bash:: bash
+
+    cat ~/Desktop/example/ranked.txt
+    Rank    Score    Matches    Win %    Filename
+       1    1433          2     100.00    20160109_152414.jpg
+       2    1414          3      66.67    20160109_151557.jpg
+       3    1401          2      50.00    20160109_153443.jpg
+       4    1400          2      50.00    20160102_164732.jpg
+       5    1387          3      33.33    20160109_151607.jpg
+       6    1383          3      33.33    20160109_152318.jpg
+       7    1382          3      33.33    20160109_152400.jpg
+
+The raw data is cached to the file ``ranking_table.json``:
+
+    cat ~/Desktop/example/ranking_table.json
+    {
+        "photos" : [
+            {
+                "matches" : 2,
+                "wins" : 2,
+                "score" : 1432.736306793522,
+                "filename" : "20160109_152414.jpg"
+            },
+            {
+                "matches" : 3,
+                "wins" : 2,
+                "score" : 1413.760501639972,
+                "filename" : "20160109_151557.jpg"
+            },
+            {
+                "matches" : 2,
+                "wins" : 1,
+                "score" : 1400.736306793522,
+                "filename" : "20160109_153443.jpg"
+            },
+            {
+                "matches" : 2,
+                "wins" : 1,
+                "score" : 1400.0336900375303,
+                "filename" : "20160102_164732.jpg"
+            },
+            {
+                "matches" : 3,
+                "wins" : 1,
+                "score" : 1387.00607880615,
+                "filename" : "20160109_151607.jpg"
+            },
+            {
+                "matches" : 3,
+                "wins" : 1,
+                "score" : 1383.263693206478,
+                "filename" : "20160109_152318.jpg"
+            },
+            {
+                "matches" : 3,
+                "wins" : 1,
+                "score" : 1382.4634227228255,
+                "filename" : "20160109_152400.jpg"
+            }
+        ]
+    }
+
+If you run the program again, the cached data is loaded and new matches can
+be continued using the cached data.  If new photos are added, they get added
+to the table data and are included in new match ups.

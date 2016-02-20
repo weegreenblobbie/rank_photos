@@ -252,7 +252,7 @@ class EloTable:
 
             n_matchups = n_photos / 2
 
-            for j in xrange(0, n_photos, 2):
+            for j in xrange(0, n_photos - 1, 2):
 
                 match_up = j / 2
 
