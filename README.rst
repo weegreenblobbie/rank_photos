@@ -6,7 +6,7 @@ Photo Ranking With Python
 .. _`Elo Ranking System`: http://en.wikipedia.org/wiki/Elo_rating_system
 .. _`exifread`: https://pypi.python.org/pypi/ExifRead
 
-.. image:: screenshot.png
+.. image:: screenshot.jpg
 
 What is this?
 -------------
