@@ -41,12 +41,11 @@ class Photo:
         self._wins = wins
         self._matches = matches
 
-        # read orientation with exifread
+        self._read_and_downsample()
 
-        with open(filename, 'rb') as fd:
-            tags = exifread.process_file(fd)
 
-        self._rotation = str(tags['Image Orientation'])
+    def data(self):
+        return self._data
 
 
     def filename(self):
@@ -55,10 +54,6 @@ class Photo:
 
     def matches(self):
         return self._matches
-
-
-    def rotation(self):
-        return self._rotation
 
 
     def score(self, s = None, is_winner = None):
@@ -94,10 +89,77 @@ class Photo:
         }
 
 
+    def _read_and_downsample(self):
+        """
+        Reads the image, performs rotation, and downsamples.
+        """
+
+        #----------------------------------------------------------------------
+        # read image
+
+        f = self._filename
+
+        data = mpimg.imread(f)
+
+        #----------------------------------------------------------------------
+        # downsample
+
+        # the point of downsampling is so the images can be redrawn by the
+        # display as fast as possible, this is so one can iterate though the
+        # image set as quickly as possible.  No one want's to wait around for
+        # the fat images to be loaded over and over.
+
+        # dump downsample, just discard columns-n-rows
+
+        M, N = data.shape[0:2]
+
+        MN = max([M,N])
+
+        step = int(MN / 800)
+        if step == 0: m_step = 1
+
+        data = data[ 0:M:step, 0:N:step, :]
+
+        #----------------------------------------------------------------------
+        # rotate
+
+        # read orientation with exifread
+
+        with open(f, 'rb') as fd:
+            tags = exifread.process_file(fd)
+
+        r = str(tags['Image Orientation'])
+
+        # rotate as necessary
+
+        if r == 'Horizontal (normal)':
+            pass
+
+        elif r == 'Rotated 90 CW':
+
+            data = np.rot90(data, 3)
+
+        elif r == 'Rotated 90 CCW':
+
+            data = np.rot90(data, 1)
+
+        else:
+            raise RuntimeError('Unhandled rotation "%s"' % r)
+
+        self._data = data
+
+
 class Display(object):
     """
     Given two photos, displays them with Matplotlib and provides a graphical
     means of choosing the better photo.
+
+    Click on the select button to pick the better photo.
+
+    ~OR~
+
+    Press the left or right arrow key to pick the better photo.
+
     """
 
 
@@ -139,11 +201,8 @@ class Display(object):
             hspace = 0,
         )
 
-        left = self._read(f1)
-        right = self._read(f2)
-
-        ax11.imshow(left)
-        ax12.imshow(right)
+        ax11.imshow(f1.data())
+        ax12.imshow(f2.data())
 
         for ax in [ax11, ax12, ax21, ax22]:
             ax.set_xticklabels([])
@@ -160,36 +219,6 @@ class Display(object):
         plt.show()
 
 
-    def _read(self, photo):
-
-        data = mpimg.imread(photo.filename())
-
-        r = photo.rotation()
-
-#~        print "Rotation: ", r
-#~        print "    data.shape = ", data.shape
-
-        # rotate as necessary
-
-        if r == 'Horizontal (normal)':
-            pass
-
-        elif r == 'Rotated 90 CW':
-
-            data = np.rot90(data, 3)
-
-        elif r == 'Rotated 90 CCW':
-
-            data = np.rot90(data, 1)
-
-        else:
-            raise RuntimeError('Unhandled rotation "%s"' % r)
-
-#~        print "    data.shape = ", data.shape
-
-        return data
-
-
     def _on_click(self, event):
 
         if event.inaxes == self._ax_select_left:
@@ -201,8 +230,20 @@ class Display(object):
             plt.close(self._fig)
 
 
+    def _on_key_press(self, event):
+
+        if event.key == 'left':
+            self._choice = Photo.LEFT
+            plt.close(self._fig)
+
+        elif event.key == 'right':
+            self._choice = Photo.RIGHT
+            plt.close(self._fig)
+
+
     def _attach_callbacks(self):
         self._fig.canvas.mpl_connect('button_press_event', self._on_click)
+        self._fig.canvas.mpl_connect('key_press_event', self._on_key_press)
 
 
 class EloTable:
@@ -214,12 +255,21 @@ class EloTable:
         self._shuffled_keys = []
 
 
-    def add_photo(self, photo):
+    def add_photo(self, filename_or_photo):
 
-        filename = photo.filename()
+        if isinstance(filename_or_photo, str):
 
-        if filename not in self._photos:
-            self._photos[filename] = photo
+            filename = filename_or_photo
+
+            if filename not in self._photos:
+                self._photos[filename] = Photo(filename)
+
+        elif isinstance(filename_or_photo, Photo):
+
+            photo = filename_or_photo
+
+            if photo.filename() not in self._photos:
+                self._photos[photo.filename()] = photo
 
 
     def get_ranked_list(self):
@@ -308,6 +358,10 @@ def main():
 Uses the Elo ranking algorithm to sort your images by rank.  The program globs
 for .jpg images to present to you in random order, then you select the better
 photo.  After n-rounds, the results are reported.
+
+Click on the "Select" button or press the LEFT or RIGHT arrow to pick the
+better photo.
+
 """
     parser = argparse.ArgumentParser(description = description)
 
@@ -349,11 +403,14 @@ photo.  After n-rounds, the results are reported.
     #--------------------------------------------------------------------------
     # Read in table .json if present
 
+    sys.stdout.write("Reading in photos and downsampling ...")
+    sys.stdout.flush()
+
     if os.path.isfile(ranking_table_json):
         with open(ranking_table_json, 'r') as fd:
             d = json.load(fd)
 
-        # create photos and add to table
+        # read photos and add to table
 
         for p in d['photos']:
 
@@ -366,10 +423,10 @@ photo.  After n-rounds, the results are reported.
 
     filelist = glob.glob('*.jpg')
 
-    photos = [Photo(x) for x in filelist]
+    for f in filelist:
+        table.add_photo(f)
 
-    for p in photos:
-        table.add_photo(p)
+    print(" done!")
 
     #--------------------------------------------------------------------------
     # Rank the photos!
