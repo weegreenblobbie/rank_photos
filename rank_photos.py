@@ -143,6 +143,10 @@ class Photo:
 
             data = np.rot90(data, 1)
 
+        elif r == 'Rotated 180':
+
+            data = np.rot90(data, 2)
+
         else:
             raise RuntimeError('Unhandled rotation "%s"' % r)
 
@@ -316,10 +320,12 @@ class EloTable:
 
                 d = Display(photo_a, photo_b, title, figsize)
 
-                if d == Photo.LEFT:
+                if d._choice == Photo.LEFT:
                     self.__score_result(photo_a, photo_b)
-                else:
+                elif d._choice == Photo.RIGHT:
                     self.__score_result(photo_b, photo_a)
+                else:
+                    raise RuntimeError("oops, found a bug!")
 
 
     def __score_result(self, winning_photo, loosing_photo):
