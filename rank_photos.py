@@ -128,7 +128,12 @@ class Photo:
         with open(f, 'rb') as fd:
             tags = exifread.process_file(fd)
 
-        r = str(tags['Image Orientation'])
+        r = 'Horizontal (normal)'
+
+        try:
+            r = str(tags['Image Orientation'])
+        except:
+            pass
 
         # rotate as necessary
 
