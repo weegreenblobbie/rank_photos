@@ -116,7 +116,7 @@ class Photo:
         MN = max([M,N])
 
         step = int(MN / 800)
-        if step == 0: m_step = 1
+        if step == 0: step = 1
 
         data = data[ 0:M:step, 0:N:step, :]
 
