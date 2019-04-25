@@ -303,15 +303,15 @@ class EloTable:
 
         n_photos = len(self._photos)
 
-        keys = self._photos.keys()
+        keys = list(self._photos.keys())
 
-        for i in xrange(n_iterations):
+        for i in range(n_iterations):
 
             np.random.shuffle(keys)
 
             n_matchups = n_photos / 2
 
-            for j in xrange(0, n_photos - 1, 2):
+            for j in range(0, n_photos - 1, 2):
 
                 match_up = j / 2
 
@@ -482,12 +482,12 @@ better photo.
     #--------------------------------------------------------------------------
     # dump ranked list to screen
 
-    print "Final Ranking:"
+    print("Final Ranking:")
 
     with open(ranked_txt, 'r') as fd:
         text = fd.read()
 
-    print text
+    print(text)
 
 
 
