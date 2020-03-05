@@ -17,12 +17,10 @@ import json
 import os
 import sys
 
-
 # 3rd party
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-
 import exifread
 
 
@@ -31,7 +29,7 @@ class Photo:
     LEFT = 0
     RIGHT = 1
 
-    def __init__(self, filename, score = 1400.0, wins = 0, matches = 0):
+    def __init__(self, filename, score=1400.0, wins=0, matches=0):
 
         if not os.path.isfile(filename):
             raise ValueError("Could not find the file: %s" % filename)
@@ -43,20 +41,16 @@ class Photo:
 
         self._read_and_downsample()
 
-
     def data(self):
         return self._data
-
 
     def filename(self):
         return self._filename
 
-
     def matches(self):
         return self._matches
 
-
-    def score(self, s = None, is_winner = None):
+    def score(self, s=None, is_winner=None):
 
         if s is None:
             return self._score
@@ -70,38 +64,34 @@ class Photo:
         if is_winner:
             self._wins += 1
 
-
     def win_percentage(self):
         return 100.0 * float(self._wins) / float(self._matches)
-
 
     def __eq__(self, rhs):
         return self._filename == rhs._filename
 
-
     def to_dict(self):
 
         return {
-            'filename' : self._filename,
-            'score' : self._score,
-            'matches' : self._matches,
-            'wins' : self._wins,
+            'filename': self._filename,
+            'score': self._score,
+            'matches': self._matches,
+            'wins': self._wins,
         }
-
 
     def _read_and_downsample(self):
         """
         Reads the image, performs rotation, and downsamples.
         """
 
-        #----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
         # read image
 
         f = self._filename
 
         data = mpimg.imread(f)
 
-        #----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
         # downsample
 
         # the point of downsampling is so the images can be redrawn by the
@@ -113,14 +103,15 @@ class Photo:
 
         M, N = data.shape[0:2]
 
-        MN = max([M,N])
+        MN = max([M, N])
 
         step = int(MN / 800)
-        if step == 0: step = 1
+        if step == 0:
+            step = 1
 
-        data = data[ 0:M:step, 0:N:step, :]
+        data = data[0:M:step, 0:N:step, :]
 
-        #----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
         # rotate
 
         # read orientation with exifread
@@ -171,8 +162,7 @@ class Display(object):
 
     """
 
-
-    def __init__(self, f1, f2, title = None, figsize = None):
+    def __init__(self, f1, f2, title=None, figsize=None):
 
         self._choice = None
 
@@ -180,19 +170,19 @@ class Display(object):
         assert isinstance(f2, Photo)
 
         if figsize is None:
-            figsize = [20,12]
+            figsize = [20, 12]
 
         fig = plt.figure(figsize=figsize)
 
         h = 10
 
-        ax11 = plt.subplot2grid((h,2), (0,0), rowspan = h - 1)
-        ax12 = plt.subplot2grid((h,2), (0,1), rowspan = h - 1)
+        ax11 = plt.subplot2grid((h, 2), (0, 0), rowspan=h - 1)
+        ax12 = plt.subplot2grid((h, 2), (0, 1), rowspan=h - 1)
 
-        ax21 = plt.subplot2grid((h,6), (h - 1, 1))
-        ax22 = plt.subplot2grid((h,6), (h - 1, 4))
+        ax21 = plt.subplot2grid((h, 6), (h - 1, 1))
+        ax22 = plt.subplot2grid((h, 6), (h - 1, 4))
 
-        kwargs = dict(s = 'Select', ha = 'center', va = 'center', fontsize=20)
+        kwargs = dict(s='Select', ha='center', va='center', fontsize=20)
 
         ax21.text(0.5, 0.5, **kwargs)
         ax22.text(0.5, 0.5, **kwargs)
@@ -202,12 +192,12 @@ class Display(object):
         self._ax_select_right = ax22
 
         fig.subplots_adjust(
-            left = 0.02,
-            bottom = 0.02,
-            right = 0.98,
-            top = 0.98,
-            wspace = 0.05,
-            hspace = 0,
+            left=0.02,
+            bottom=0.02,
+            right=0.98,
+            top=0.98,
+            wspace=0.05,
+            hspace=0,
         )
 
         ax11.imshow(f1.data())
@@ -227,7 +217,6 @@ class Display(object):
 
         plt.show()
 
-
     def _on_click(self, event):
 
         if event.inaxes == self._ax_select_left:
@@ -237,7 +226,6 @@ class Display(object):
         elif event.inaxes == self._ax_select_right:
             self._choice = Photo.RIGHT
             plt.close(self._fig)
-
 
     def _on_key_press(self, event):
 
@@ -249,7 +237,6 @@ class Display(object):
             self._choice = Photo.RIGHT
             plt.close(self._fig)
 
-
     def _attach_callbacks(self):
         self._fig.canvas.mpl_connect('button_press_event', self._on_click)
         self._fig.canvas.mpl_connect('key_press_event', self._on_key_press)
@@ -257,12 +244,10 @@ class Display(object):
 
 class EloTable:
 
-
-    def __init__(self, max_increase = 32.0):
+    def __init__(self, max_increase=32.0):
         self._K = max_increase
         self._photos = {}
         self._shuffled_keys = []
-
 
     def add_photo(self, filename_or_photo):
 
@@ -280,7 +265,6 @@ class EloTable:
             if photo.filename() not in self._photos:
                 self._photos[photo.filename()] = photo
 
-
     def get_ranked_list(self):
 
         # Convert the dictionary into a list and then sort by score.
@@ -289,11 +273,10 @@ class EloTable:
 
         ranked_list = sorted(
             ranked_list,
-            key = lambda record : record.score(),
-            reverse = True)
+            key=lambda record: record.score(),
+            reverse=True)
 
         return ranked_list
-
 
     def rank_photos(self, n_iterations, figsize):
         """
@@ -332,7 +315,6 @@ class EloTable:
                 else:
                     raise RuntimeError("oops, found a bug!")
 
-
     def __score_result(self, winning_photo, loosing_photo):
 
         # Current ratings
@@ -352,15 +334,13 @@ class EloTable:
         winning_photo.score(R_a, True)
         loosing_photo.score(R_b, False)
 
-
     def to_dict(self):
 
         rl = self.get_ranked_list()
 
         rl = [x.to_dict() for x in rl]
 
-        return {'photos' : rl}
-
+        return {'photos': rl}
 
 
 def main():
@@ -374,28 +354,28 @@ Click on the "Select" button or press the LEFT or RIGHT arrow to pick the
 better photo.
 
 """
-    parser = argparse.ArgumentParser(description = description)
+    parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument(
         "-r",
         "--n-rounds",
-        type = int,
-        default = 3,
-        help = "Specifies the number of rounds to pass through the photo set (3)"
+        type=int,
+        default=3,
+        help="Specifies the number of rounds to pass through the photo set (3)"
     )
 
     parser.add_argument(
         "-f",
         "--figsize",
-        nargs = 2,
-        type = int,
-        default = [20, 12],
-        help = "Specifies width and height of the Matplotlib figsize (20, 12)"
+        nargs=2,
+        type=int,
+        default=[20, 12],
+        help="Specifies width and height of the Matplotlib figsize (20, 12)"
     )
 
     parser.add_argument(
         "photo_dir",
-        help = "The photo directory to scan for .jpg images"
+        help="The photo directory to scan for .jpg images"
     )
 
     args = parser.parse_args()
@@ -405,13 +385,13 @@ better photo.
     os.chdir(args.photo_dir)
 
     ranking_table_json = 'ranking_table.json'
-    ranked_txt         = 'ranked.txt'
+    ranked_txt = 'ranked.txt'
 
     # Create the ranking table and add photos to it.
 
     table = EloTable()
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Read in table .json if present
 
     sys.stdout.write("Reading in photos and downsampling ...")
@@ -429,7 +409,7 @@ better photo.
 
             table.add_photo(photo)
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # glob for files, to include newly added files
 
     filelist = glob.glob('*.jpg')
@@ -439,23 +419,23 @@ better photo.
 
     print(" done!")
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Rank the photos!
 
     table.rank_photos(args.n_rounds, args.figsize)
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # save the table
 
     with open(ranking_table_json, 'w') as fd:
 
         d = table.to_dict()
 
-        jstr = json.dumps(d, indent = 4, separators=(',', ' : '))
+        jstr = json.dumps(d, indent=4, separators=(',', ' : '))
 
         fd.write(jstr)
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # dump ranked list to disk
 
     with open(ranked_txt, 'w') as fd:
@@ -470,7 +450,7 @@ better photo.
 
         for i, photo in enumerate(ranked_list):
 
-            line = heading_fmt %(
+            line = heading_fmt % (
                 i + 1,
                 photo.score(),
                 photo.matches(),
@@ -479,7 +459,7 @@ better photo.
 
             fd.write(line)
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # dump ranked list to screen
 
     print("Final Ranking:")
@@ -490,5 +470,5 @@ better photo.
     print(text)
 
 
-
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()
