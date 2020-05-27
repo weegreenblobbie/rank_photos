@@ -173,6 +173,7 @@ class Display(object):
             figsize = [20, 12]
 
         fig = plt.figure(figsize=figsize)
+        plt.get_current_fig_manager().window.state('zoomed')
 
         h = 10
 
@@ -438,9 +439,8 @@ better photo.
     # --------------------------------------------------------------------------
     # dump ranked list to disk
 
+    ranked_list = table.get_ranked_list()
     with open(ranked_txt, 'w') as fd:
-
-        ranked_list = table.get_ranked_list()
 
         heading_fmt = "%4d    %4.0f    %7d    %7.2f    %s\n"
 
@@ -468,6 +468,14 @@ better photo.
         text = fd.read()
 
     print(text)
+
+    # --------------------------------------------------------------------------
+    # rename files in ranked list
+
+    for i, photo in enumerate(ranked_list):
+        fname = photo.filename()
+        rank = i + 1
+        os.rename(fname, str(rank) + '-' + fname)
 
 
 if __name__ == "__main__":
